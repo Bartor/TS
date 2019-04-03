@@ -1,10 +1,11 @@
 import networkx as nx
 import random
+import numpy as np
 
-def success_rate(f, n):
+def success_rate(f, n, *args):
     success = 0
     for i in range(n):
-        if f():
+        if f(*args):
             success += 1
     return success/n
 
@@ -31,19 +32,20 @@ def works(graph, p, T_max, average_packet_size):
             for v in range(len(path)):
                 if v != len(path) - 1:
                     graph[path[v]][path[v+1]]['load'] += load
-                    if graph[path[v]][path[v+1]]['load'] > graph[path[v]][path[v+1]]['capacity']:
+                    if graph[path[v]][path[v+1]]['load'] >= graph[path[v]][path[v+1]]['capacity']:
                         return False
     T = average_latency(graph, average_packet_size)
     return T < T_max
 
-capacity_matrix = [[100]*10]*10
-load_matrix = [[7]*10]*10
-
-def experiment():
+def experiment(*args):
+    capacity_matrix = [[50]*10]*10
+    load_matrix = [[random.randint(3, 7)]*10]*10
     graph = nx.petersen_graph()
     for e_start, e_end in graph.edges:
         graph[e_start][e_end]['capacity'] = capacity_matrix[e_start][e_end]
         graph[e_start][e_end]['load'] = load_matrix[e_start][e_end]
-    return works(graph, 0.75, 0.015, 1)
+    return works(graph, *args, 1)
 
-print(success_rate(experiment, 10000))
+for i in np.linspace(0.3, 0.95, 30):
+    for j in np.linspace(0.030, 0.021, 30):
+        print('p={:f} t={:f} :: {:f}'.format(i, j, success_rate(experiment, 100, i, j)))
