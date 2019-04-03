@@ -48,4 +48,6 @@ def experiment(*args):
 
 for i in np.linspace(0.3, 0.95, 30):
     for j in np.linspace(0.030, 0.021, 30):
-        print('p={:f} t={:f} :: {:f}'.format(i, j, success_rate(experiment, 100, i, j)))
+        print('{:f},{:f},{:f}'.format(i, j, success_rate(experiment, 100, i, j)))
+
+#http://almende.github.io/chap-links-library/js/graph3d/playground/
