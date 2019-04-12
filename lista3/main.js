@@ -1,12 +1,10 @@
-let frame = require('./frame');
-let config = JSON.parse(require('fs').readFileSync('./config.json'));
+const express = require('express');
+const path = require('path');
 
-let exampleInput = '11111111101011111111110111111101111';
+const app = express();
 
-console.log(`Input: ${exampleInput}`);
+app.use(express.static(path.join(__dirname, 'static')));
 
-let x = frame.encode(exampleInput, config);
+app.listen(2137);
 
-console.log(`Encoded: ${x}`);
-
-console.log(`Decoded: ${frame.decode(x, config)}`);
+console.log(`Check http://localhost:2137/`);
