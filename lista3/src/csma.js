@@ -3,6 +3,7 @@ class CSMA {
         this.line = [];
         while (size --> 0) this.line.push([]);
         this.nodes = [];
+        this.verbose = false;
     }
 }
 
@@ -13,9 +14,12 @@ CSMA.prototype.addNode = function (id, position) {
         id: id,
         position: position,
         emit: false,
-        timeout: -1
+        collision: false,
+        timeout: -1, //TODO do something with starting timeout
+        mult: 1,
     }
     );
+    if (this.verbose) console.log(`Node ${id} is added at ${position}`);
 }
 
 CSMA.prototype.step = function () {
@@ -31,21 +35,57 @@ CSMA.prototype.step = function () {
     for (let [i, l] of this.line.entries()) {
         for (let t of l) {
             if (t.d === -1) {
+                if (this.verbose) console.log(`<-[${t.id}]`);
                 if (i !== 0) newLine[i-1].push({d: -1, id: t.id});
             }
 
             if (t.d === 0) {
+                if (this.verbose) console.log(`<-[${t.id}]->`);
                 if (i !== 0) newLine[i-1].push({d: -1, id: t.id});
                 if (i !== this.line.length-1) newLine[i+1].push({d: 1, id: t.id});
             }
 
             if (t.d === 1) {
+                if (this.verbose) console.log(`[${t.id}]->`);
                 if (i !== this.line.length-1) newLine[i+1].push({d: 1, id: t.id});
             }
         }
     }
 
     this.line = newLine;
+
+    for (let n of this.nodes) {
+        if (!n.emit && n.timeout === 0) {
+            if (this.verbose) console.log(`${n.id} is starting to emit`);
+            n.emit();
+        }
+
+        if (n.emit) {
+            if (this.verbose) console.log(`${n.id} emits`);
+
+            this.line[n.position].push({d: 0, id: n.id});
+            if (!n.col && this.line[n.position].filter(e => e.id != n.id).length) {
+                if (this.verbose) console.log(`${n.id} detected collision`);
+                n.col = true;
+            }
+        }
+
+        n.timeout--;
+
+        if (n.emit && n.timeout === 0) {
+            n.emit = false;
+
+            if (n.col) {
+                n.timeout = this.line.length * Math.pow(2, n.mult);
+                n.mult++;
+                console.log(`${n.id} waits ${n.timeout}`);
+            } else {
+                n.mult = 1;
+                n.timeout = 2137; //TODO do something with random timeout
+                console.log(`${n.id} successfully transmitted`);
+            }
+        }
+    }
 }
 
 CSMA.prototype.emit = function(id) {
