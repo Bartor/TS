@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const frame = require('./frame');
+const frame = require('./src/frame');
 
 const app = express();
 
