@@ -47,3 +47,14 @@ CSMA.prototype.step = function () {
 
     this.line = newLine;
 }
+
+CSMA.prototype.emit = function(id) {
+    let n = this.nodes.find(e => e.id === id);
+    if (n === undefined) throw 'no such node exists';
+    if (n.emit) throw 'this node is already emitting';
+
+    this.line[n.position].push({d: 0, id: n.id});
+
+    n.timeout = 2*this.line.length + 1;
+    n.emit = true;
+}
