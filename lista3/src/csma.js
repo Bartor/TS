@@ -1,6 +1,6 @@
 class CSMA {
     constructor(size) {
-        this.line = new Array(size);
+        this.line = new Array(size).fill([]);
         this.nodes = [];
     }
 }
@@ -18,10 +18,24 @@ CSMA.prototype.addNode = function (id, position) {
 }
 
 CSMA.prototype.step = function () {
-    for (let t of this.line) {
-        
-    }
-    for (let n of this.nodes) {
+    //t is an array of arrays
+    //each cell holds a list of transmissions currently being send through
+    //a transmission is an object {d: -1|0|1, id: id of a node}
+    for (let [i, l] of this.line.entries()) {
+        for (let t of l) {
+            if (t.d === -1) {
+                if (i !== 0) this.line[i-1].push({d: -1, id: t.id});
+            }
 
+            if (t.d === 0) {
+                if (i !== 0) this.line[i-1].push({d: -1, id: t.id});
+                if (i !== this.line.length-1) this.line[i+1].push({d: 1, id: t.id});
+            }
+
+            if (t.d === 1) {
+                if (i !== this.line.length-1) this.line[i+1].push({d: 1, id: t.id});
+            }
+        }
+        l.length = 0;
     }
 }
