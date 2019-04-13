@@ -30,7 +30,6 @@ CSMA.prototype.step = function () {
 
     for (let [i, l] of this.line.entries()) {
         for (let t of l) {
-            console.log(t);
             if (t.d === -1) {
                 if (i !== 0) newLine[i-1].push({d: -1, id: t.id});
             }
@@ -44,7 +43,6 @@ CSMA.prototype.step = function () {
                 if (i !== this.line.length-1) newLine[i+1].push({d: 1, id: t.id});
             }
         }
-        this.line[i].length = 0;
     }
 
     this.line = newLine;
