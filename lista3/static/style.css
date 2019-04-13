@@ -22,24 +22,25 @@ input[type="button"]:active {
     transform: scale(0.95);
 }
 
+input[type="text"] {
+    width: 50%;
+}
+
 .flex-container {
     display: flex;
     width: 100%;
 
-    align-items: center;
-    justify-content: center;
-}
-
-.column {
     flex-flow: column;
+    align-items: center;
+    justify-content: space-around;
 }
 
-.space {
-    justify-content: space-between;
+main.flex-container {
+    justify-content: baseline;
 }
 
-.end {
-    align-items: flex-end;
+.flex-container > * {
+    margin: 8px;
 }
 
 .title {
