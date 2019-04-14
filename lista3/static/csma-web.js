@@ -167,7 +167,14 @@ function nextStep(csma, tab) {
         }
         
         for (let n of csma.nodes) {
-            tab.children[1].children[n.position].textContent = `${n.id}\r\n${n.timeout}`;
+            let cell = tab.children[1].children[n.position];
+            cell.textContent = `${n.id}\r\n${n.timeout}`;
+            if (n.emit) {
+                if (n.collision) cell.style = 'background-color: red;';
+                else cell.style = 'background-color: blue;'
+            } else {
+                cell.style = 'background-color: white;';
+            }
         }
     }
 }
