@@ -1,3 +1,7 @@
+/***
+ * A transmission line with nodes emitting stuff
+ * @param {number} size - Size of the transmission line
+ */
 class CSMA {
     constructor(size) {
         this.line = [];
@@ -7,6 +11,12 @@ class CSMA {
     }
 }
 
+/***
+ * Adds a new node
+ * @param {object} id - A unique identifier
+ * @param {number} position - A unique Position on the transmission line
+ * @param {number} probability - How probable is it to start emitting at any given time
+ */
 CSMA.prototype.addNode = function (id, position, probability = 0.05) {
     if (position >= this.line.length) throw 'wrong position';
     if (this.nodes.some(e =>(e.id == id || e.position == position))) throw 'this id or position is taken';
@@ -25,6 +35,9 @@ CSMA.prototype.addNode = function (id, position, probability = 0.05) {
     if (this.verbose) console.log(`Node ${id} is added at ${position}`);
 }
 
+/***
+ * Performs a single step, simulating the "network"
+ */
 CSMA.prototype.step = function () {
     //t is an array of arrays
     //each cell holds a list of transmissions currently being send through
