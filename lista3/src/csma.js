@@ -59,7 +59,7 @@ CSMA.prototype.step = function () {
 
     for (let n of this.nodes) {
         if (!n.emit && n.timeout === 0) {
-            if (this.line[n.position] > 0) {
+            if (this.line[n.position].length > 0) {
                 n.timeout += Math.floor(this.line.length/2);
                 if (this.verbose) console.log(`${n.id} waits for line to be clear`);
             } else {
