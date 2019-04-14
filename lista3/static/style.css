@@ -52,13 +52,15 @@ main.flex-container {
 
 #csma {
     border-collapse: collapse;
-    width: 80%;
     height: 100px;
     text-align: center;
+    white-space: pre-line;
 }
 
 #csma > tr, #csma > tr > td {
     border: 1px solid black;
+    min-width: 100px;
+    max-width: 100px;
 }
 
 #csma > tr > td > input, #csma > tr > td > button {
