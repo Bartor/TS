@@ -49,3 +49,21 @@ main.flex-container {
     font-weight: bold;
     background-color: #ddd;
 }
+
+#csma {
+    border-collapse: collapse;
+    width: 80%;
+    height: 100px;
+    text-align: center;
+}
+
+#csma > tr, #csma > tr > td {
+    border: 1px solid black;
+}
+
+#csma > tr > td > input, #csma > tr > td > button {
+    border: 0;
+    width: 100%;
+    height: 50%;
+    text-align: center;
+}

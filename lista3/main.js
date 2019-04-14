@@ -12,6 +12,10 @@ app.get('/e/:code', (req, res) => {
     res.send(frame.encode(req.params.code));
 });
 
+app.get('/e', (req, res) => {
+    res.send('');
+});
+
 app.get('/d/:code', (req, res) => {
     let r = '';
     try {
@@ -19,6 +23,10 @@ app.get('/d/:code', (req, res) => {
     } catch (e) {}
     res.send(r);
 });
+
+app.get('/d', (req, res) => {
+    res.send('');
+})
 
 app.listen(2137);
 

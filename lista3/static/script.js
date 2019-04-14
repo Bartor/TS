@@ -1,6 +1,7 @@
 window.addEventListener('load', () => {
     document.getElementById('encode').addEventListener('click', encode);
     document.getElementById('decode').addEventListener('click', decode);
+    document.getElementById('csma_create').addEventListener('click', startCSMA);
 });
 
 function encode() {
@@ -21,4 +22,14 @@ function decode() {
     }
     xhr.open('GET', `/d/${t}`, true);
     xhr.send();
+}
+
+function startCSMA() {
+    let container = document.getElementById('csma_container');
+    let size = document.getElementById('csma_size').value;
+
+    let csma = new CSMA(size);
+    csma.verbose = true;
+
+    initCsma(container, csma);
 }
