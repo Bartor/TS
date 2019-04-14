@@ -59,15 +59,20 @@ CSMA.prototype.step = function () {
 
     for (let n of this.nodes) {
         if (!n.emit && n.timeout === 0) {
-            if (this.verbose) console.log(`${n.id} is starting to emit`);
-            this.emit(n.id);
+            if (this.line[n.position] > 0) {
+                n.timeout += Math.floor(this.line.length/2);
+                if (this.verbose) console.log(`${n.id} waits for line to be clear`);
+            } else {
+                if (this.verbose) console.log(`${n.id} is starting to emit`);
+                this.emit(n.id);
+            }
         }
 
         if (n.emit) {
             if (this.verbose) console.log(`${n.id} emits`);
 
             this.line[n.position].push({d: 0, id: n.id});
-            if (!n.col && this.line[n.position].filter(e => e.id != n.id).length) {
+            if (!n.collision && this.line[n.position].filter(e => e.id != n.id).length) {
                 if (this.verbose) console.log(`${n.id} detected collision`);
                 n.collision = true;
             }
@@ -78,9 +83,10 @@ CSMA.prototype.step = function () {
         if (n.emit && n.timeout === 0) {
             n.emit = false;
 
-            if (n.col) {
+            if (n.collision) {
                 n.timeout = this.line.length * Math.pow(2, n.mult);
                 n.mult++;
+                n.collision = false;
                 if (this.verbose) console.log(`${n.id} waits ${n.timeout}`);
             } else {
                 n.mult = 1;
