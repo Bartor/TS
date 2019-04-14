@@ -65,7 +65,8 @@ CSMA.prototype.step = function () {
                 if (this.verbose) console.log(`${n.id} waits for line to be clear`);
             } else {
                 if (this.verbose) console.log(`${n.id} is starting to emit`);
-                this.emit(n.id);
+                n.timeout = 2*this.line.length + 1;
+                n.emit = true;
             }
         }
 
@@ -98,15 +99,6 @@ CSMA.prototype.step = function () {
             }
         }
     }
-}
-
-CSMA.prototype.emit = function(id) {
-    let n = this.nodes.find(e => e.id === id);
-    if (n === undefined) throw 'no such node exists';
-    if (n.emit) throw 'this node is already emitting';
-
-    n.timeout = 2*this.line.length + 1;
-    n.emit = true;
 }
 
 function initCsma(element, csma) {
