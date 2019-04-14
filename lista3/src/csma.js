@@ -7,16 +7,19 @@ class CSMA {
     }
 }
 
-CSMA.prototype.addNode = function (id, position) {
+CSMA.prototype.addNode = function (id, position, probability = 0.05) {
     if (position >= this.line.length) throw 'wrong position';
     if (this.nodes.some(e =>(e.id == id || e.position == position))) throw 'this id or position is taken';
+    let t = 0;
+    while (Math.random() > probability) t++;
     this.nodes.push({
         id: id,
         position: position,
         emit: false,
         collision: false,
-        timeout: -1, //TODO do something with starting timeout
-        mult: 1,
+        timeout: t,
+        probability: probability,
+        mult: 1
     }
     );
     if (this.verbose) console.log(`Node ${id} is added at ${position}`);
@@ -57,7 +60,7 @@ CSMA.prototype.step = function () {
     for (let n of this.nodes) {
         if (!n.emit && n.timeout === 0) {
             if (this.verbose) console.log(`${n.id} is starting to emit`);
-            n.emit();
+            this.emit(n.id);
         }
 
         if (n.emit) {
@@ -66,7 +69,7 @@ CSMA.prototype.step = function () {
             this.line[n.position].push({d: 0, id: n.id});
             if (!n.col && this.line[n.position].filter(e => e.id != n.id).length) {
                 if (this.verbose) console.log(`${n.id} detected collision`);
-                n.col = true;
+                n.collision = true;
             }
         }
 
@@ -78,11 +81,11 @@ CSMA.prototype.step = function () {
             if (n.col) {
                 n.timeout = this.line.length * Math.pow(2, n.mult);
                 n.mult++;
-                console.log(`${n.id} waits ${n.timeout}`);
+                if (this.verbose) console.log(`${n.id} waits ${n.timeout}`);
             } else {
                 n.mult = 1;
-                n.timeout = 2137; //TODO do something with random timeout
-                console.log(`${n.id} successfully transmitted`);
+                while (Math.random() > n.probability) n.timeout++;
+                if (this.verbose) console.log(`${n.id} successfully transmitted`);
             }
         }
     }
@@ -93,8 +96,8 @@ CSMA.prototype.emit = function(id) {
     if (n === undefined) throw 'no such node exists';
     if (n.emit) throw 'this node is already emitting';
 
-    this.line[n.position].push({d: 0, id: n.id});
-
     n.timeout = 2*this.line.length + 1;
     n.emit = true;
 }
+
+module.exports = CSMA;
