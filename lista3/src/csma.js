@@ -84,7 +84,9 @@ CSMA.prototype.step = function () {
             n.emit = false;
 
             if (n.collision) {
-                n.timeout = this.line.length * Math.pow(2, n.mult);
+                let timeouts = [];
+                for (let i = 0; i <= n.mult; i++) timeouts.push(Math.pow(2, i));
+                n.timeout = this.line.length * timeouts[Math.floor(Math.random()*timeouts.length)];                
                 n.mult++;
                 n.collision = false;
                 if (this.verbose) console.log(`${n.id} waits ${n.timeout}`);
