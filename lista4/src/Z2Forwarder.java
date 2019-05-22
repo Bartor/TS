@@ -35,8 +35,7 @@ public class Z2Forwarder {
     Random random;
 
 
-    public Z2Forwarder(int myPort, int destPort)
-            throws Exception {
+    public Z2Forwarder(int myPort, int destPort) throws Exception {
         localHost = InetAddress.getByName("127.0.0.1");
         destinationPort = destPort;
         socket = new DatagramSocket(myPort);
@@ -55,8 +54,7 @@ public class Z2Forwarder {
             synchronized (buffer) {
                 for (i = 0; i < capacity && buffer[i] != null; i++) ;
                 if (i < capacity) {
-                    delay[i] = minDelay
-                            + (int) (random.nextDouble() * (maxDelay - minDelay));
+                    delay[i] = minDelay + (int) (random.nextDouble() * (maxDelay - minDelay));
                     buffer[i] = packet;
                 }
             }
@@ -65,13 +63,11 @@ public class Z2Forwarder {
 
         public void run() {
             while (true) {
-                DatagramPacket packet =
-                        new DatagramPacket(new byte[datagramSize], datagramSize);
+                DatagramPacket packet = new DatagramPacket(new byte[datagramSize], datagramSize);
                 try {
                     socket.receive(packet);
                     addToBuffer(packet);
                     while (random.nextDouble() < duplicatePpb) addToBuffer(packet);
-
                 } catch (java.io.IOException e) {
                     System.out.println("Forwader.Receiver.run: " + e);
                 }
@@ -81,9 +77,7 @@ public class Z2Forwarder {
     }
 
     class Sender extends Thread {
-
-        void checkBuffer()
-                throws java.io.IOException {
+        void checkBuffer() throws java.io.IOException {
             synchronized (buffer) {
                 int i;
                 for (i = 0; i < capacity; i++)
@@ -98,7 +92,7 @@ public class Z2Forwarder {
             }
         }
 
-
+        @Override
         public void run() {
             try {
                 while (true) {
@@ -113,10 +107,14 @@ public class Z2Forwarder {
     }
 
 
-    public static void main(String[] args)
-            throws Exception {
-        Z2Forwarder forwarder = new Z2Forwarder(Integer.parseInt(args[0]),
-                Integer.parseInt(args[1]));
+    public static void main(String[] args) {
+        Z2Forwarder forwarder;
+        try {
+            forwarder = new Z2Forwarder(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+        } catch (Exception e) {
+            System.out.println("error");
+            return;
+        }
         forwarder.sender.start();
         forwarder.receiver.start();
     }
