@@ -1,17 +1,20 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.HashMap;
 
 /***
  * @author Łukasz Krzywiecki
  */
 public class Z2Receiver {
-    static final int datagramSize = 50;
-    int destinationPort;
+    private static final int datagramSize = 50;
+    private int destinationPort;
 
-    InetAddress localHost;
-    DatagramSocket socket;
-    ReceiverThread receiver;
+    private HashMap<Integer, Character> received = new HashMap<>();
+
+    private InetAddress localHost;
+    private DatagramSocket socket;
+    private ReceiverThread receiver;
 
     public Z2Receiver(int myPort, int destPort) throws Exception {
         localHost = InetAddress.getByName("127.0.0.1");
@@ -29,8 +32,12 @@ public class Z2Receiver {
                     DatagramPacket packet = new DatagramPacket(data, datagramSize);
                     socket.receive(packet);
                     Z2Packet p = new Z2Packet(packet.getData());
-                    System.out.println("R:" + p.getIntAt(0) + ": " + (char) p.data[4]);
-                    // WYSLANIE POTWIERDZENIA
+
+                    if (!received.containsKey(p.getIntAt(0))) {
+                        received.put(p.getIntAt(0), (char) p.data[4]);
+                        checkIntegrityAndPrint(p.getIntAt(0));
+                    }
+                    //System.out.println("R:" + p.getIntAt(0) + ": " + (char) p.data[4]);
                     packet.setPort(destinationPort);
                     socket.send(packet);
                 }
@@ -38,7 +45,17 @@ public class Z2Receiver {
                 System.out.println("Z2Receiver.ReceiverThread.run: " + e);
             }
         }
+    }
 
+    private void checkIntegrityAndPrint(int index) {
+        for (int i = 0; i < index; i++) {
+            if (!received.containsKey(i)) return;
+        }
+        System.out.println("CURRENT MESSAGE");
+        for (int i = 0; i <= index; i++) {
+            System.out.print(received.get(i).charValue());
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) {
