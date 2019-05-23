@@ -2,12 +2,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /***
  * @author Łukasz Krzywiecki
+ * @author Bartosz Rajczyk - modifications
  */
 class Z2Sender {
     private static final int datagramSize = 50;
@@ -37,7 +36,21 @@ class Z2Sender {
                 try {
                     wait(timeout);
                 } catch (InterruptedException e) {
-                    System.out.println("thread " + seq + " is interrupted");
+                    synchronized (sent) {
+                        if (sent.isEmpty()) {
+                            System.out.println("Sending end of transmission");
+                            //end of transmission
+                            Z2Packet p = new Z2Packet(4 + 1);
+                            p.setIntAt(-1, 0);
+                            DatagramPacket packet = new DatagramPacket(p.data, p.data.length, localHost, destinationPort);
+                            try {
+                                socket.send(packet);
+                            } catch (IOException ee) {/**/}
+                            sent.put(-1, checkAndResend(-1, 0));
+                            sent.get(-1).start();
+                        }
+                    }
+                    return;
                 }
                 Z2Packet p = new Z2Packet(4 + 1);
                 p.setIntAt(seq, 0);
@@ -50,7 +63,7 @@ class Z2Sender {
                     synchronized (sent) {
                         sent.remove(seq);
                         sent.put(seq, checkAndResend(seq, data));
-                        sent.get(seq).run();
+                        sent.get(seq).start();
                     }
                 } catch (IOException e) {/**/}
             }
@@ -74,8 +87,10 @@ class Z2Sender {
                     }
                     sleep(sleepTime);
                 }
-            } catch (Exception e) {
-                System.out.println("Z2Sender.SenderThread.run: " + e);
+            } catch (IOException e) {
+                System.out.println("IO");
+            } catch (InterruptedException e) {
+                System.out.println("Interrupt");
             }
         }
     }
@@ -90,13 +105,15 @@ class Z2Sender {
                     socket.receive(packet);
                     Z2Packet p = new Z2Packet(packet.getData());
                     synchronized (sent) {
-                        sent.get(p.getIntAt(0)).interrupt();
-                        sent.remove(p.getIntAt(0));
-                        System.out.println("Successfully transmitted char at " + p.getIntAt(0) + ": " + (char) p.data[4]);
+                        if (sent.containsKey(p.getIntAt(0))) {
+                            sent.get(p.getIntAt(0)).interrupt();
+                            sent.remove(p.getIntAt(0));
+                            System.out.println("Successfully transmitted char at " + p.getIntAt(0) + ": " + (char) p.data[4]);
+                        }
                     }
                 }
-            } catch (Exception e) {
-                System.out.println("Z2Sender.ReceiverThread.run: " + e);
+            } catch (IOException e) {
+                System.out.println("IO");
             }
         }
     }
@@ -112,6 +129,4 @@ class Z2Sender {
         sender.sender.start();
         sender.receiver.start();
     }
-
-
 }

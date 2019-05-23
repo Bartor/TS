@@ -1,16 +1,18 @@
+import javax.swing.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.HashMap;
+import java.util.*;
 
 /***
  * @author Łukasz Krzywiecki
+ * @author Bartosz Rajczyk - modifications
  */
 public class Z2Receiver {
     private static final int datagramSize = 50;
     private int destinationPort;
 
-    private HashMap<Integer, Character> received = new HashMap<>();
+    private TreeMap<Integer, Character> received = new TreeMap<>();
 
     private InetAddress localHost;
     private DatagramSocket socket;
@@ -32,12 +34,19 @@ public class Z2Receiver {
                     DatagramPacket packet = new DatagramPacket(data, datagramSize);
                     socket.receive(packet);
                     Z2Packet p = new Z2Packet(packet.getData());
+                    if (p.getIntAt(0) == -1) {
+                        System.out.println("Final message:");
+                        for (Map.Entry<Integer, Character> e : received.entrySet()) {
+                            System.out.print(e.getValue());
+                        }
+                        System.out.println();
+                        break;
+                    }
 
                     if (!received.containsKey(p.getIntAt(0))) {
                         received.put(p.getIntAt(0), (char) p.data[4]);
                         checkIntegrityAndPrint(p.getIntAt(0));
                     }
-                    //System.out.println("R:" + p.getIntAt(0) + ": " + (char) p.data[4]);
                     packet.setPort(destinationPort);
                     socket.send(packet);
                 }
@@ -54,8 +63,8 @@ public class Z2Receiver {
         System.out.println("CURRENT MESSAGE");
         for (int i = 0; i <= index; i++) {
             System.out.print(received.get(i).charValue());
-            System.out.println();
         }
+        System.out.println();
     }
 
     public static void main(String[] args) {
@@ -68,6 +77,4 @@ public class Z2Receiver {
         }
         receiver.receiver.start();
     }
-
-
 }
