@@ -1,0 +1,19 @@
+body, html {
+    height: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #0070ff;
+    margin: 0;
+}
+
+a {
+    color: inherit;
+}
+
+.flex-cont {
+    color: white;
+    display: flex;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
