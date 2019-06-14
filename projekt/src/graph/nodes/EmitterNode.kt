@@ -7,7 +7,11 @@ import kotlin.random.Random
 class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
     private var collisions = 0
     private var timeout = Random.nextInt() % maxTimeout
-    private var emitting = false
+
+    public var emitting = false
+        private set
+    public var collision = false
+        private set
 
     override fun step() {
         //timeout controls both emitting and waiting to emit
@@ -15,15 +19,22 @@ class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
             //if we're emitting, stop it
             if (emitting) {
                 emitting = false
-                collisions = 0
+                if (collision) {
+                    timeout = (0b1 shl (abs(Random.nextInt()) % collisions)) * maxTimeout
+                    //println("$this stops emitting and waits $timeout")
+                } else {
+                    collisions = 0
+                    //println("$this successfully transmitted a message")
+                }
             }
             //if there are no signals, we can start emitting
             if (signals.isEmpty()) {
-                println("$this starts emitting")
+                //println("$this starts emitting")
                 emitting = true
-                timeout = 2*maxTimeout
+                timeout = 2 * maxTimeout
             } else {
                 timeout = abs(Random.nextInt()) % maxTimeout
+                //println("$this attempts to emit, but line is taken, waits $timeout")
             }
         }
         if (emitting) signals.add(Signal(this, this))
@@ -31,20 +42,13 @@ class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
     }
 
     override fun signal(signal: Signal) {
-        if (signal.of == null && emitting) {
-            println("$this detects collision")
-            emitting = false
-            collisions++
-            timeout = (1 shl (abs(Random.nextInt()) % collisions))*maxTimeout
-        }
-
+        if (signal.of == this) return
         super.signal(signal)
         //if we detect more than a single signal
-        if (signals.size > 1) {
-            //we clear all signals
-            signals.clear()
-            //and add an error signal
-            signals.add(Signal(null, this))
+        if (emitting && signals.size > 1 && !collision) {
+            collision = true
+            collisions++
+            //println("$this detects a collision")
         }
     }
 }

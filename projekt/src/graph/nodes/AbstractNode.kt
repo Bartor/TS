@@ -4,9 +4,10 @@ import graph.signals.Signal
 
 abstract class AbstractNode(private val id: String) : NodeInterface {
     private val toList = mutableListOf<NodeInterface>()
-    protected val signals = mutableListOf<Signal>()
+    public val signals = mutableListOf<Signal>()
+    private val incomingSignals = mutableListOf<Signal>()
 
-    override fun to(node: NodeInterface) {
+    override fun addTo(node: NodeInterface) {
         toList.add(node)
     }
 
@@ -16,19 +17,20 @@ abstract class AbstractNode(private val id: String) : NodeInterface {
             //for every receiving node
             for (node in toList) {
                 //transmit it everywhere
-                println("$this sends $signal to $node")
+                //println("$this -> $node : $signal")
                 if (signal.prev != node) node.signal(Signal(signal.of, this))
             }
-            //and remove
-            signals.remove(signal)
         }
+        signals.clear()
+        signals.addAll(incomingSignals)
+        incomingSignals.clear()
     }
 
     override fun signal(signal: Signal) {
-        signals.add(signal)
+        incomingSignals.add(signal)
     }
 
     override fun toString(): String {
-        return "Node#$id"
+        return "n#$id"
     }
 }

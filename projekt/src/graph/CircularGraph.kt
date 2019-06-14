@@ -7,7 +7,7 @@ import java.lang.Math.abs
 import kotlin.random.Random
 
 class CircularGraph(private val size: Int, private val emitters: Int) {
-    private val nodes = arrayOfNulls<NodeInterface>(size)
+    public val nodes = arrayOfNulls<NodeInterface>(size)
 
     init {
         for (i in 0 until emitters) {
@@ -19,15 +19,17 @@ class CircularGraph(private val size: Int, private val emitters: Int) {
         }
         for (i in 0 until nodes.size - 1) {
             if (i == 0) {
-                nodes[0]?.to(nodes[1])
-                nodes[0]?.to(nodes[nodes.size - 1])
+                println("${nodes[0]} adds ${nodes[1]} and ${nodes[nodes.size - 1]}")
+                nodes[0]?.addTo(nodes[1]!!)
+                nodes[0]?.addTo(nodes[nodes.size - 1]!!)
 
-                nodes[nodes.size - 1]?.to(nodes[0])
-                nodes[nodes.size - 1]?.to(nodes[nodes.size - 2])
+                println("${nodes[nodes.size -1 ]} adds ${nodes[0]} and ${nodes[nodes.size - 2]}")
+                nodes[nodes.size - 1]?.addTo(nodes[0]!!)
+                nodes[nodes.size - 1]?.addTo(nodes[nodes.size - 2]!!)
             } else {
                 println("${nodes[i]} adds ${nodes[i-1]} and ${nodes[i+1]}")
-                nodes[i]?.to(nodes[i-1])
-                nodes[i]?.to(nodes[i+1])
+                nodes[i]?.addTo(nodes[i-1]!!)
+                nodes[i]?.addTo(nodes[i+1]!!)
             }
         }
     }
