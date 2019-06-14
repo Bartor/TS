@@ -1,3 +1,3 @@
 package graph.nodes
 
-class RelayNode : AbstractNode()
+class RelayNode(id: String) : AbstractNode(id)
