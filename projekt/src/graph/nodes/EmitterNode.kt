@@ -3,11 +3,12 @@ package graph.nodes
 import graph.Stats
 import graph.signals.Signal
 import java.lang.Math.abs
+import kotlin.math.sign
 import kotlin.random.Random
 
-class EmitterNode(id: String, private val maxTimeout: Int, private val stats: Stats) : AbstractNode(id) {
+class EmitterNode(id: String, private val maxTimeout: Int, private val stats: Stats, private val probability: Double) : AbstractNode(id) {
     private var collisions = 0
-    private var timeout = Random.nextInt() % maxTimeout
+    private var timeout = nextEmitting()
 
     public var emitting = false
         private set
@@ -15,48 +16,75 @@ class EmitterNode(id: String, private val maxTimeout: Int, private val stats: St
         private set
 
     override fun step() {
-        //timeout controls both emitting and waiting to emit
-        if (timeout-- == 0) {
-            //if we're emitting, stop it
-            if (emitting) {
-                emitting = false
-                if (collision) {
-                    timeout = (0b1 shl (abs(Random.nextInt()) % collisions)) * maxTimeout
-                    //println("$this stops emitting and waits $timeout")
-                } else {
-                    collisions = 0
-                    timeout = abs(Random.nextInt()) % maxTimeout
-                    stats.succeses++
-                    //println("$this successfully transmitted a message")
-                }
-            } else {
-                if (collision) collision = false
-            }
-            //if there are no signals, we can start emitting
-            if (signals.isEmpty()) {
-                stats.tries++
-                //println("$this starts emitting")
-                emitting = true
-                timeout = 2 * maxTimeout
-            } else {
-                timeout = abs(Random.nextInt()) % maxTimeout
-                stats.waits++
-                //println("$this attempts to emit, but line is taken, waits $timeout")
+        for (signal in signals) {
+            for (node in toList) {
+                if (signal.prev != node) node.signal(Signal(signal.of, this))
             }
         }
-        if (emitting) signals.add(Signal(this, this))
-        super.step()
+        if (emitting) {
+            //if we're emitting, we always signal
+            incomingSignals.add(Signal(this, this))
+            if (collision) {
+                //emitting with collision
+                if (timeout == 0) {
+                    //we stopped emitting with collision
+                    emitting = false
+                    collision = false
+                    timeout = maxTimeout * (0b1 shl (Random.nextInt() % collisions))
+                }
+            } else {
+                //emitting and no collision
+                if (timeout == 0) {
+                    //success! we transmitted
+                    collisions = 0
+                    emitting = false
+                    timeout = nextEmitting()
+
+                    stats.succeses++
+                } else {
+                    //if we're still transmitting
+                    if (incomingSignals.size > 1) {
+                        //we detect collision!
+                        collisions++
+                        collision = true
+
+                        stats.collisions++
+                    }
+                }
+            }
+        } else {
+            //not emitting = no collision
+            if (timeout == 0) {
+                //we want to emit
+                if (incomingSignals.size == 0) {
+                    //if the line's free, we start emitting
+                    emitting = true
+                    //this is enough, because we're on a ring
+                    timeout = maxTimeout + 1
+
+                    stats.tries++
+                } else {
+                    //else, we wait some more
+                    timeout = Random.nextInt() % maxTimeout
+
+                    stats.waits++
+                }
+            }
+        }
+        timeout--
+        signals.clear()
+        signals.addAll(incomingSignals)
+        incomingSignals.clear()
     }
 
     override fun signal(signal: Signal) {
-        if (signal.of == this) return
-        super.signal(signal)
-        //if we detect more than a single signal
-        if (emitting && signals.size > 1 && !collision) {
-            stats.collisions++
-            collision = true
-            collisions++
-            //println("$this detects a collision")
-        }
+        //we don't want to transmit signals from ourselves father - they've made the full loop
+        if (signal.of != this && signal.prev != this) incomingSignals.add(signal)
+    }
+
+    private fun nextEmitting(): Int {
+        var i = 1
+        while (Random.nextDouble() > probability) i++
+        return i
     }
 }

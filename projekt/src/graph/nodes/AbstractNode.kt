@@ -3,9 +3,9 @@ package graph.nodes
 import graph.signals.Signal
 
 abstract class AbstractNode(private val id: String) : NodeInterface {
-    private val toList = mutableListOf<NodeInterface>()
+    protected val incomingSignals = mutableListOf<Signal>()
+    protected val toList = mutableListOf<NodeInterface>()
     public val signals = mutableListOf<Signal>()
-    private val incomingSignals = mutableListOf<Signal>()
 
     override fun addTo(node: NodeInterface) {
         toList.add(node)
