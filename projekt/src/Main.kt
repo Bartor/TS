@@ -1,14 +1,16 @@
 import graph.CircularGraph
 import graph.Stats
 
-const val TRIES = 100
-const val SIZE = 100
-const val EMITTERS = 5
-const val PROB = 0.05
+const val TRIES = 100 //how many simulations are held
+
+const val SIZE = 100 //size of the graph
+const val EMITTERS = 5 //number of emitting nodes
+const val PROB = 0.05 //probability of emission in an arbitrary step
+const val CHANCE = 0.5 //probability of not connecting every node in circular graph
 
 fun main(args: Array<String>) {
     val stats = mutableListOf<Stats>(); for (i in 0..TRIES) {
-        val g = CircularGraph(SIZE, EMITTERS, PROB)
+        val g = CircularGraph(SIZE, EMITTERS, PROB, CHANCE)
         for (j in 1..SIZE*SIZE) {
             g.step()
         }
