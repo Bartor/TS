@@ -47,3 +47,14 @@ Plik server3.pl zawiera przykładowy program serwera protokołu HTTP.
 5. Zmień skrypt (lub napisz własny serwer w dowolnym języku programowania) tak aby obsugiwał żądania klienta do prostego tekstowego serwisu WWW (kilka statycznych ston z wzajemnymi odwołaniami) zapisanego w pewnym katalogu dysku lokalnego komputera na którym uruchomiony jest skrypt serwera.
 6. Przechwyć komunikaty do/od serwera za pomocą analizatora sieciowego 'sniffera' - przeanalizuj ich konstrukcję.
 7. Napisz zwięzłe (bardzo krótkie) sprawozdanie z wykonanych ćwiczeń.
+
+
+### Projekt
+Napisać grupę programów do symulowania ethernetowej metody dostępu do mediów transmisyjnych (CSMA/CD).
+Wspólne łącze realizowane jest przy pomocy tablic: każde urządzenie jest umieszczone na końcu kabla, propagacja sygnału symulowana jest za pomoca propagacji wartości do sąsiednich komórek.
+Rozważamy 2 modele.
+- W pierwszym, urządzenia połączone są na wzór grafu kołowego. Każdy węzeł grafu symbolizuje urządzenie, a krawędź — kabel losowej długości (tablice są różnych długości).
+Każda stacja chce nadać wiadomość do wszystkich pozostałych. Gdy wiadomość dotrze do urządzenia A jest następnie w pewien sposób przekazywany dalej po krawędziach wychodzących z A. Należy przetestować działanie dla różnej liczby komputerów. Należy założyć, że kolizje mogą być wykrywane jedynie przez urządzenia. Jak rozwiązać problem wysyłania wiadomości do samego siebie? Jak na działanie wpływa możliwość sunięcia dowolnej krawędzi z prawdopodbieństwem p?
+- W drugim modelu rozważyć sytuację zadaną przez graf gwiaździsty. Jedno centrum — serwer, a pozostałe węzły to urządzenia podłączone bezpośrednio do serwera. Każde urządzenie chce przesłać wiadomosć do pozostałych. Gdy serwer otrzyma wiadomość, to przejmuje rolę nadawcy. Co, jeśli serwer może wysyłać tylko jedną wiadomość na raz? Co, jeśli serwer może jedynie wysyłać albo słuchać? Znaleźć techniczne rozwiązanie tych problemów.
+Przeprowadzić symulacje dla różnych liczb urządzeń oraz średnich długości kabli w obu modelach i napisać sprawozdanie.
+
