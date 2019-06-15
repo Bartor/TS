@@ -1,29 +1,70 @@
-import graph.CircularGraph
-import graph.StarGraph
-import graph.Stats
+import com.google.gson.Gson
+import graph.*
+import java.io.File
+import java.util.*
 
 const val TRIES = 100 //how many simulations are held
 
-const val SIZE = 100 //size of the graph
-const val EMITTERS = 5 //number of emitting nodes
-const val PROB = 0.05 //probability of emission in an arbitrary step
-const val CHANCE = 0.5 //probability of not connecting every node in circular graph
-
 fun main(args: Array<String>) {
-    val stats = mutableListOf<Stats>(); for (i in 0..TRIES) {
-        //val g = CircularGraph(SIZE, EMITTERS, PROB, CHANCE)
-        val g = StarGraph(EMITTERS, PROB)
-        for (j in 1..SIZE*SIZE) {
-            g.step()
+    val finalStats = arrayOfNulls<Array<Array<StatyStats?>?>?>(10)
+    for (size in 10..100 step 10) {
+        finalStats[size/10 - 1] = arrayOfNulls(10)
+        for (emitters in 1..10) {
+            finalStats[size/10 - 1]!![emitters - 1] = arrayOfNulls(10)
+            for (probability in 1..10) {
+                print("SIZE: $size EMITTERS: $emitters PROBABILITY: ${probability/100.0}")
+                val circularFullStats = Stats()
+                for (i in 0..TRIES) {
+                    val s = getStats(CircularGraph(size, emitters, probability/100.0, 1.0), size*size)
+                    circularFullStats.collisions += s.collisions/TRIES
+                    circularFullStats.succeses += s.succeses/TRIES
+                    circularFullStats.tries += s.tries/TRIES
+                    circularFullStats.waits += s.waits/TRIES
+                }
+                print(".")
+
+                val circularHalfStats = Stats()
+                for (i in 0..TRIES) {
+                    val s = getStats(CircularGraph(size, emitters, probability/100.0, 0.5), size*size)
+                    circularHalfStats.collisions += s.collisions/TRIES
+                    circularHalfStats.succeses += s.succeses/TRIES
+                    circularHalfStats.tries += s.tries/TRIES
+                    circularHalfStats.waits += s.waits/TRIES
+                }
+                print(".")
+
+                val circularQuarterStats = Stats()
+                for (i in 0..TRIES) {
+                    val s = getStats(CircularGraph(size, emitters, probability/100.0, 0.25), size*size)
+                    circularQuarterStats.collisions += s.collisions/TRIES
+                    circularQuarterStats.succeses += s.succeses/TRIES
+                    circularQuarterStats.tries += s.tries/TRIES
+                    circularQuarterStats.waits += s.waits/TRIES
+                }
+                print(".")
+
+                val starStats = Stats()
+                for (i in 0..TRIES) {
+                    val s = getStats(StarGraph(emitters, probability/100.0), emitters*emitters)
+                    starStats.collisions += s.collisions/TRIES
+                    starStats.succeses += s.succeses/TRIES
+                    starStats.tries += s.tries/TRIES
+                    starStats.waits += s.waits/TRIES
+                }
+                print(".")
+
+                finalStats[size/10 - 1]!![emitters - 1]!![probability - 1] = StatyStats(circularFullStats, circularHalfStats, circularQuarterStats, starStats)
+                println("\tdone")
+            }
         }
-        stats.add(g.stats)
     }
-    val avg = Stats()
-    for (stat in stats) {
-        avg.collisions += stat.collisions/stats.size
-        avg.succeses += stat.succeses/stats.size
-        avg.tries += stat.tries/stats.size
-        avg.waits += stat.waits/stats.size
+
+    File("$TRIES-${Calendar.getInstance().timeInMillis}.json").writeText(Gson().toJson(finalStats))
+}
+
+fun getStats(g: AbstractGraph, steps: Int): Stats {
+    for (j in 0..steps) {
+        g.step()
     }
-    println(avg)
+    return g.stats
 }

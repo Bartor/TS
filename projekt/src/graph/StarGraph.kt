@@ -4,11 +4,11 @@ import graph.nodes.ClientNode
 import graph.nodes.NodeInterface
 import graph.nodes.ServerNode
 
-class StarGraph(private val size: Int, private val probability: Double) {
+class StarGraph(private val size: Int, private val probability: Double) : AbstractGraph() {
     private val nodes = mutableListOf<NodeInterface>()
     private val server = ServerNode("server")
 
-    public val stats = Stats()
+    public override val stats = Stats()
 
     init {
         for (i in 0 until size) {
@@ -19,7 +19,7 @@ class StarGraph(private val size: Int, private val probability: Double) {
         }
     }
 
-    public fun step() {
+    public override fun step() {
         for (node in nodes) node.step()
         server.step()
     }

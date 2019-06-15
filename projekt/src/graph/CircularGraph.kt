@@ -6,9 +6,9 @@ import graph.nodes.RelayNode
 import java.lang.Math.abs
 import kotlin.random.Random
 
-class CircularGraph(private val size: Int, private val emitters: Int, private val probability: Double, private val nodelChance: Double) {
-    public val nodes = arrayOfNulls<NodeInterface>(size)
-    public val stats = Stats()
+class CircularGraph(size: Int, emitters: Int, probability: Double, nodeChance: Double) : AbstractGraph() {
+    private val nodes = arrayOfNulls<NodeInterface>(size)
+    public override val stats = Stats()
 
     init {
         for (i in 0 until emitters) {
@@ -20,24 +20,21 @@ class CircularGraph(private val size: Int, private val emitters: Int, private va
         }
         for (i in 0 until nodes.size - 1) {
             if (i == 0) {
-                if (Random.nextDouble() < nodelChance) {
-                    //println("${nodes[0]} adds ${nodes[1]} and ${nodes[nodes.size - 1]}")
+                if (Random.nextDouble() < nodeChance) {
                     nodes[0]?.addTo(nodes[1]!!)
                     nodes[0]?.addTo(nodes[nodes.size - 1]!!)
 
-                    //println("${nodes[nodes.size -1 ]} adds ${nodes[0]} and ${nodes[nodes.size - 2]}")
                     nodes[nodes.size - 1]?.addTo(nodes[0]!!)
                     nodes[nodes.size - 1]?.addTo(nodes[nodes.size - 2]!!)
                 }
             } else {
-                //println("${nodes[i]} adds ${nodes[i-1]} and ${nodes[i+1]}")
                 nodes[i]?.addTo(nodes[i-1]!!)
                 nodes[i]?.addTo(nodes[i+1]!!)
             }
         }
     }
 
-    public fun step() {
+    public override fun step() {
         for (node in nodes) node!!.step()
     }
 }
