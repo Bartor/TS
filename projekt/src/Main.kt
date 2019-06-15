@@ -1,4 +1,5 @@
 import graph.CircularGraph
+import graph.StarGraph
 import graph.Stats
 
 const val TRIES = 100 //how many simulations are held
@@ -10,7 +11,8 @@ const val CHANCE = 0.5 //probability of not connecting every node in circular gr
 
 fun main(args: Array<String>) {
     val stats = mutableListOf<Stats>(); for (i in 0..TRIES) {
-        val g = CircularGraph(SIZE, EMITTERS, PROB, CHANCE)
+        //val g = CircularGraph(SIZE, EMITTERS, PROB, CHANCE)
+        val g = StarGraph(EMITTERS, PROB)
         for (j in 1..SIZE*SIZE) {
             g.step()
         }
