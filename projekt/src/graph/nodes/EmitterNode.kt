@@ -1,10 +1,11 @@
 package graph.nodes
 
+import graph.Stats
 import graph.signals.Signal
 import java.lang.Math.abs
 import kotlin.random.Random
 
-class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
+class EmitterNode(id: String, private val maxTimeout: Int, private val stats: Stats) : AbstractNode(id) {
     private var collisions = 0
     private var timeout = Random.nextInt() % maxTimeout
 
@@ -24,16 +25,22 @@ class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
                     //println("$this stops emitting and waits $timeout")
                 } else {
                     collisions = 0
+                    timeout = abs(Random.nextInt()) % maxTimeout
+                    stats.succeses++
                     //println("$this successfully transmitted a message")
                 }
+            } else {
+                if (collision) collision = false
             }
             //if there are no signals, we can start emitting
             if (signals.isEmpty()) {
+                stats.tries++
                 //println("$this starts emitting")
                 emitting = true
                 timeout = 2 * maxTimeout
             } else {
                 timeout = abs(Random.nextInt()) % maxTimeout
+                stats.waits++
                 //println("$this attempts to emit, but line is taken, waits $timeout")
             }
         }
@@ -46,6 +53,7 @@ class EmitterNode(id: String, private val maxTimeout: Int) : AbstractNode(id) {
         super.signal(signal)
         //if we detect more than a single signal
         if (emitting && signals.size > 1 && !collision) {
+            stats.collisions++
             collision = true
             collisions++
             //println("$this detects a collision")

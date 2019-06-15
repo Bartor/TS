@@ -38,7 +38,7 @@ class CircGraphPlotter {
                         is RelayNode -> {
                             "_"
                         }
-                        else -> "?"
+                        else -> "!"
                     }.padEnd(lengths[i])
                 )
                 builder.append("|")
