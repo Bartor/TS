@@ -6,14 +6,14 @@ import graph.nodes.RelayNode
 import java.lang.Math.abs
 import kotlin.random.Random
 
-class CircularGraph(private val size: Int, private val emitters: Int) {
+class CircularGraph(private val size: Int, private val emitters: Int, private val probabilty: Double) {
     public val nodes = arrayOfNulls<NodeInterface>(size)
     public val stats = Stats()
 
     init {
         for (i in 0 until emitters) {
             val idx = abs(Random.nextInt()) % size
-            nodes[idx] = EmitterNode("T:$idx", size, stats)
+            nodes[idx] = EmitterNode("T:$idx", size, stats, probabilty)
         }
         for (i in 0 until nodes.size) {
             if (nodes[i] == null) nodes[i] = RelayNode("R:$i")
