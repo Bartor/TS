@@ -1,5 +1,9 @@
 import com.google.gson.Gson
 import graph.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -17,53 +21,36 @@ fun main(args: Array<String>) {
 
                 val latch = CountDownLatch(4)
 
-                val circularFullStats = Stats()
+                var circularFullStats = Stats()
                 Thread {
-                    for (i in 0..TRIES) {
-                        val s = getStats(CircularGraph(size, emitters, probability/100.0, 1.0), size*size)
-                        circularFullStats.collisions += s.collisions/TRIES
-                        circularFullStats.succeses += s.succeses/TRIES
-                        circularFullStats.tries += s.tries/TRIES
-                        circularFullStats.waits += s.waits/TRIES
+                    circularFullStats = launchThreaded(TRIES) {
+                        getStats(CircularGraph(size, emitters, probability/100.0, 1.0), size*size)
+                    }
+                    print(".")
+                }.start()
+
+                var circularHalfStats = Stats()
+                Thread {
+                    circularHalfStats = launchThreaded(TRIES) {
+                        getStats(CircularGraph(size, emitters, probability/100.0, 0.5), size*size)
                     }
                     latch.countDown()
                     print(".")
                 }.start()
 
-                val circularHalfStats = Stats()
+                var circularQuarterStats = Stats()
                 Thread {
-                    for (i in 0..TRIES) {
-                        val s = getStats(CircularGraph(size, emitters, probability/100.0, 0.5), size*size)
-                        circularHalfStats.collisions += s.collisions/TRIES
-                        circularHalfStats.succeses += s.succeses/TRIES
-                        circularHalfStats.tries += s.tries/TRIES
-                        circularHalfStats.waits += s.waits/TRIES
+                    circularQuarterStats = launchThreaded(TRIES) {
+                        getStats(CircularGraph(size, emitters, probability/100.0, 0.25), size*size)
                     }
                     latch.countDown()
                     print(".")
                 }.start()
 
-                val circularQuarterStats = Stats()
+                var starStats = Stats()
                 Thread {
-                    for (i in 0..TRIES) {
-                        val s = getStats(CircularGraph(size, emitters, probability/100.0, 0.25), size*size)
-                        circularQuarterStats.collisions += s.collisions/TRIES
-                        circularQuarterStats.succeses += s.succeses/TRIES
-                        circularQuarterStats.tries += s.tries/TRIES
-                        circularQuarterStats.waits += s.waits/TRIES
-                    }
-                    latch.countDown()
-                    print(".")
-                }.start()
-
-                val starStats = Stats()
-                Thread {
-                    for (i in 0..TRIES) {
-                        val s = getStats(StarGraph(size, emitters, probability/100.0), emitters*emitters)
-                        starStats.collisions += s.collisions/TRIES
-                        starStats.succeses += s.succeses/TRIES
-                        starStats.tries += s.tries/TRIES
-                        starStats.waits += s.waits/TRIES
+                    starStats = launchThreaded(TRIES) {
+                        getStats(StarGraph(size, emitters, probability/100.0), emitters*emitters)
                     }
                     latch.countDown()
                     print(".")
@@ -85,4 +72,26 @@ fun getStats(g: AbstractGraph, steps: Int): Stats {
         g.step()
     }
     return g.stats
+}
+
+fun launchThreaded(tries: Int, what: () -> Stats) : Stats {
+    val localStats = mutableListOf<Stats>()
+    runBlocking {
+        for (i in 0 until tries) {
+            launch {
+                val s = what()
+                synchronized(localStats) {
+                    localStats.add(s)
+                }
+            }
+        }
+    }
+    val res = Stats()
+    for (s in localStats) {
+        res.collisions += s.collisions/TRIES
+        res.succeses += s.succeses/TRIES
+        res.tries += s.tries/TRIES
+        res.waits += s.waits/TRIES
+    }
+    return res
 }
