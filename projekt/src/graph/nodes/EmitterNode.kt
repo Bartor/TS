@@ -15,6 +15,11 @@ class EmitterNode(id: String, private val maxTimeout: Int, private val stats: St
     public var collision = false
         private set
 
+    override fun end(): NodeInterface {
+        if (toList.isEmpty()) return this@EmitterNode
+        return toList[0].end()
+    }
+
     override fun step() {
         for (signal in signals) {
             for (node in toList) {

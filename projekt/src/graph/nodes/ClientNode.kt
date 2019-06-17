@@ -5,13 +5,18 @@ import graph.signals.Signal
 import kotlin.random.Random
 
 class ClientNode(id: String, private val maxTimeout: Int, private val stats: Stats, private val probability: Double) : NodeInterface {
-    private lateinit var serverNode: ServerNode
+    private lateinit var serverNode: NodeInterface
+    private val signals = mutableListOf<Signal>()
     private var timeout = nextEmitting()
 
     private var emitting = false
 
+    override fun end(): NodeInterface {
+        if (!::serverNode.isInitialized) return this@ClientNode
+        return serverNode.end()
+    }
+
     override fun addTo(node: NodeInterface) {
-        if (node !is ServerNode) throw Exception("Only server node can be added to ClientNodes")
         serverNode = node
     }
 
@@ -26,16 +31,24 @@ class ClientNode(id: String, private val maxTimeout: Int, private val stats: Sta
             }
         } else {
             if (timeout == 0) {
-                emitting = true
-                timeout = nextEmitting()
+                if (signals.filter { it.of != this }.isNotEmpty()) {
+                    timeout = nextEmitting()
 
-                stats.tries++
+                    stats.waits++
+                } else {
+                    emitting = true
+                    timeout = 2*maxTimeout + 2
+
+                    stats.tries++
+                }
             }
         }
+        signals.clear()
         timeout--
     }
 
     override fun signal(signal: Signal) {
+        signals.add(signal)
         if (emitting && signal.of != this) {
             emitting = false
             timeout = nextEmitting()

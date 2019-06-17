@@ -5,6 +5,10 @@ import graph.signals.Signal
 class ServerNode(id: String) : AbstractNode(id) {
     private var emitter: NodeInterface? = null
 
+    override fun end(): NodeInterface {
+        return this@ServerNode
+    }
+
     override fun step() {
         if (incomingSignals.isEmpty()) {
             emitter = null
